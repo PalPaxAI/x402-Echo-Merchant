@@ -4,12 +4,6 @@ A modern, developer-focused pay-per-use API demo server for the [x402 protocol](
 
 ---
 
-## Demo
-
-[https://x402.payai.network/](https://x402.payai.network)
-
----
-
 ## Features
 
 - **Pay-per-use API endpoints** on Base Mainnet and Base Sepolia
