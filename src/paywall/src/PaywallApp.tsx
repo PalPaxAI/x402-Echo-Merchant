@@ -38,6 +38,7 @@ export function PaywallApp() {
   const [isPaying, setIsPaying] = useState(false);
   const [formattedUsdcBalance, setFormattedUsdcBalance] = useState<string>("");
   const [hideBalance, setHideBalance] = useState(true);
+  const [solanaWalletAddress, setSolanaWalletAddress] = useState<string | null>(null);
 
   const x402 = window.x402;
   const amount = x402.amount || 0;
@@ -46,6 +47,7 @@ export function PaywallApp() {
     ? x402.paymentRequirements[0]
     : x402.paymentRequirements;
   const network = requirements?.network;
+  const isSolanaNetwork = network === "solana" || network === "solana-devnet";
   const paymentChain = network === "base-sepolia"
     ? baseSepolia
     : network === "avalanche-fuji"
@@ -84,15 +86,32 @@ export function PaywallApp() {
     ? "Polygon Amoy"
     : network === "peaq"
     ? "Peaq"
+    : network === "solana-devnet"
+    ? "Solana Devnet"
+    : network === "solana"
+    ? "Solana Mainnet"
     : "Base";
   const showOnramp = Boolean(!testnet && isConnected && x402.sessionTokenEndpoint);
 
   useEffect(() => {
-    if (address) {
+    if (address && !isSolanaNetwork) {
       handleSwitchChain();
       checkUSDCBalance();
     }
-  }, [address]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, isSolanaNetwork]);
+
+  // Handle Solana wallet connection
+  useEffect(() => {
+    if (isSolanaNetwork) {
+      // Check if already connected
+      const solana = (window as any).solana;
+      if (solana?.isConnected) {
+        setSolanaWalletAddress(solana.publicKey.toString());
+        setIsCorrectChain(true);
+      }
+    }
+  }, [isSolanaNetwork]);
 
   const publicClient = createPublicClient({
     chain: paymentChain,
@@ -114,7 +133,7 @@ export function PaywallApp() {
       setIsCorrectChain(null);
       setStatus("");
     }
-  }, [paymentChain.id, connectedChainId, isConnected]);
+  }, [paymentChain.id, connectedChainId, isConnected, chainName]);
 
   const checkUSDCBalance = useCallback(async () => {
     if (!address) {
@@ -191,10 +210,26 @@ export function PaywallApp() {
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Failed to switch network");
     }
-  }, [switchChainAsync, paymentChain, isCorrectChain, switchableChains]);
+  }, [switchChainAsync, paymentChain, isCorrectChain, switchableChains, chainName]);
 
   const handlePayment = useCallback(async () => {
-    if (!address || !x402 || !paymentRequirements) {
+    if (!x402 || !paymentRequirements) {
+      return;
+    }
+
+    // Handle Solana payments
+    if (isSolanaNetwork) {
+      if (!solanaWalletAddress) {
+        setStatus("Please connect your Solana wallet first");
+        return;
+      }
+
+      setStatus("Solana payments are not yet supported in the paywall UI. Please use the x402 client library directly to create Solana payments.");
+      return;
+    }
+
+    // Handle EVM payments
+    if (!address) {
       return;
     }
 
@@ -286,7 +321,8 @@ export function PaywallApp() {
     } finally {
       setIsPaying(false);
     }
-  }, [address, x402, paymentRequirements, publicClient, paymentChain, handleSwitchChain]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, x402, paymentRequirements, publicClient, paymentChain, handleSwitchChain, isSolanaNetwork, solanaWalletAddress, chainName, handleSuccessfulResponse]);
 
   if (!x402 || !paymentRequirements) {
     return (
@@ -305,9 +341,9 @@ export function PaywallApp() {
         <h1 className="title">Payment Required</h1>
         <p>
           {paymentRequirements.description && `${paymentRequirements.description}.`} To access this
-          content, please pay ${amount} {chainName} USDC.
+          content, please pay ${amount} {chainName} {isSolanaNetwork ? 'SOL' : 'USDC'}.
         </p>
-        {testnet && (
+        {testnet && network !== "solana-devnet" && (
           <p className="instructions">
             Need Base Sepolia USDC?{" "}
             <a href="https://faucet.circle.com/" target="_blank" rel="noopener noreferrer">
@@ -315,9 +351,72 @@ export function PaywallApp() {
             </a>
           </p>
         )}
+        {testnet && network === "solana-devnet" && (
+          <p className="instructions">
+            Need Solana Devnet SOL?{" "}
+            <a href="https://faucet.solana.com/" target="_blank" rel="noopener noreferrer">
+              Get some <u>here</u>.
+            </a>
+          </p>
+        )}
       </div>
 
       <div className="content w-full">
+        {isSolanaNetwork ? (
+          <div>
+            {!solanaWalletAddress ? (
+              <button
+                className="button button-primary w-full py-3"
+                onClick={async () => {
+                  const solana = (window as any).solana;
+                  if (solana?.isPhantom || solana?.isSolflare) {
+                    try {
+                      const response = await solana.connect();
+                      setSolanaWalletAddress(response.publicKey.toString());
+                      setIsCorrectChain(true);
+                      setStatus("");
+                    } catch (err) {
+                      setStatus(err instanceof Error ? err.message : "Failed to connect Solana wallet");
+                    }
+                  } else {
+                    setStatus("Please install Phantom or Solflare wallet");
+                  }
+                }}
+              >
+                Connect wallet
+              </button>
+            ) : (
+              <div>
+                <div className="payment-details">
+                  <div className="payment-row">
+                    <span className="payment-label">Wallet:</span>
+                    <span className="payment-value">
+                      {solanaWalletAddress ? `${solanaWalletAddress.slice(0, 6)}...${solanaWalletAddress.slice(-4)}` : "Loading..."}
+                    </span>
+                  </div>
+                  <div className="payment-row">
+                    <span className="payment-label">Amount:</span>
+                    <span className="payment-value">${amount} SOL</span>
+                  </div>
+                  <div className="payment-row">
+                    <span className="payment-label">Network:</span>
+                    <span className="payment-value">{chainName}</span>
+                  </div>
+                </div>
+                <div className="cta-container">
+                  <button
+                    className="button button-primary"
+                    onClick={handlePayment}
+                    disabled={isPaying}
+                  >
+                    {isPaying ? <Spinner /> : "Pay now"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
         <Wallet className="w-full">
           <ConnectWallet className="w-full py-3" disconnectedLabel="Connect wallet">
             <Avatar className="h-5 w-5 opacity-80" />
@@ -380,6 +479,8 @@ export function PaywallApp() {
               </button>
             )}
           </div>
+            )}
+          </>
         )}
         {status && <div className="status">{status}</div>}
       </div>

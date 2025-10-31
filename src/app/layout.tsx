@@ -24,7 +24,8 @@ export const metadata: Metadata = {
     "Try x402 payments against a live merchant today. Get 100% of your payment refunded.",
   applicationName: "x402 Echo Merchant",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.png",
+    apple: "/icon.png",
   },
   alternates: {
     canonical: "/",

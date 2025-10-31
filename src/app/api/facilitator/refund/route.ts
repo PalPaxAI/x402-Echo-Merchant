@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { refund } from '../../../../refund';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export const POST = async (request: NextRequest) => {
   try {
+    // Dynamic import to avoid evaluating refund.ts during build
+    const { refund } = await import('../../../../refund');
     const { recipient, selectedPaymentRequirements, svmContext } = await request.json();
     if (!recipient || !selectedPaymentRequirements) {
       return NextResponse.json({ error: 'Missing recipient or payment requirements' }, { status: 400 });

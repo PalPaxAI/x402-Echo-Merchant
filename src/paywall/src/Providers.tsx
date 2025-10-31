@@ -21,6 +21,7 @@ export function Providers({ children }: ProvidersProps) {
     : window.x402.paymentRequirements;
 
   const network = requirements?.network;
+  const isSolanaNetwork = network === "solana" || network === "solana-devnet";
   const paymentChain = network === "base-sepolia"
     ? baseSepolia
     : network === "avalanche-fuji"
@@ -41,6 +42,12 @@ export function Providers({ children }: ProvidersProps) {
 
   console.log("paymentChain", paymentChain);
   console.log("network", network);
+  
+  // For Solana networks, don't wrap with OnchainKitProvider
+  if (isSolanaNetwork) {
+    return <>{children}</>;
+  }
+
   return (
     <OnchainKitProvider
       apiKey={cdpClientKey || undefined}

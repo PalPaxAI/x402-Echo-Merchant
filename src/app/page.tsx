@@ -27,6 +27,10 @@ const MAINNET_ENDPOINTS = [
     label: 'Sei Mainnet',
     url: `${API_URL}/api/sei/paid-content`,
   },
+  {
+    label: 'Solana Mainnet',
+    url: `${API_URL}/api/solana/paid-content`,
+  },
 ];
 
 const TESTNET_ENDPOINTS = [
@@ -46,6 +50,10 @@ const TESTNET_ENDPOINTS = [
     label: 'Sei Testnet',
     url: `${API_URL}/api/sei-testnet/paid-content`,
   },
+  {
+    label: 'Solana Devnet',
+    url: `${API_URL}/api/solana-devnet/paid-content`,
+  },
 ];
 
 // Quickstart examples removed in favor of docs links
@@ -63,7 +71,7 @@ const RESOURCES = [
   },
   {
     label: 'x402 Echo Merchant Github',
-    url: 'https://github.com/notorious-d-e-v/x402-echo-server',
+    url: 'https://github.com/PalPaxAI/x402-Echo-Merchant',
     icon: <Github className="w-4 h-4 text-indigo-600" />,
   },
 ];
@@ -151,7 +159,7 @@ export default function Home() {
       <section className="w-full max-w-2xl mx-auto pt-8 pb-16">
         <h2 className="text-2xl sm:text-3xl font-semibold mb-16 text-center">Quickstart Guides</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <a href="https://docs.payai.network/x402/clients/typescript/axios" target="_blank" rel="noopener noreferrer" className="group">
+          <a href="https://docs.palpaxai.network/x402/clients/typescript/axios" target="_blank" rel="noopener noreferrer" className="group">
             <Card className="h-full hover:border-indigo-300 transition-colors">
               <CardContent className="p-5 flex flex-col">
                 <div className="mb-3 p-2 rounded-md bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 w-fit">
@@ -163,7 +171,7 @@ export default function Home() {
               </CardContent>
             </Card>
           </a>
-          <a href="https://docs.payai.network/x402/clients/typescript/fetch" target="_blank" rel="noopener noreferrer" className="group">
+          <a href="https://docs.palpaxai.network/x402/clients/typescript/fetch" target="_blank" rel="noopener noreferrer" className="group">
             <Card className="h-full hover:border-indigo-300 transition-colors">
               <CardContent className="p-5 flex flex-col">
                 <div className="mb-3 p-2 rounded-md bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 w-fit">
@@ -201,12 +209,12 @@ export default function Home() {
         <span className="text-gray-500 text-sm flex items-center gap-1">
           Made with <Heart className="inline w-4 h-4 text-pink-500 mx-1" fill="#ec4899" /> by{' '}
           <a
-            href="https://payai.network"
+            href="https://palpaxai.network"
             target="_blank"
             rel="noopener noreferrer"
             className="text-indigo-600 underline hover:text-indigo-800 font-medium"
           >
-            PayAI
+            PalPaxAI
           </a>
         </span>
       </footer>

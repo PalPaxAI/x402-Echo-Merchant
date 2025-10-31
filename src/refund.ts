@@ -34,7 +34,7 @@ import { fetchMint } from '@solana-program/token-2022';
 const evmPrivateKey = process.env.EVM_PRIVATE_KEY as `0x${string}`;
 const account = privateKeyToAccount(evmPrivateKey);
 
-const svmPrivateKey = process.env.SVM_PRIVATE_KEY as string;
+const svmPrivateKey = process.env.SVM_PRIVATE_KEY;
 
 /**
  * Get a signer for the network
@@ -122,10 +122,18 @@ const getSigner = async (network: Network) => {
     }
 
     else if (network === "solana-devnet") {
+      if (!svmPrivateKey) {
+        throw new Error("SVM_PRIVATE_KEY environment variable is required for Solana networks");
+      }
+      // createSigner expects the private key as string (base58 or JSON array format)
       return await createSigner(network, svmPrivateKey);
     }
 
     else if (network === "solana") {
+      if (!svmPrivateKey) {
+        throw new Error("SVM_PRIVATE_KEY environment variable is required for Solana networks");
+      }
+      // createSigner expects the private key as string (base58 or JSON array format)
       return await createSigner(network, svmPrivateKey);
     }
 
